@@ -10,6 +10,7 @@ import 'features/auth/data/auth_service.dart';
 import 'features/auth/presentation/auth_screen.dart';
 import 'features/workspace/presentation/workspace_screen.dart';
 import 'features/ai/domain/retention_service.dart';
+import 'features/audio/presentation/audio_provider.dart';
 import 'core/services/sync_manager.dart';
 import 'core/services/migration/liquid_data_sync.dart';
 import 'core/services/migration/data_migration_service.dart';
@@ -80,6 +81,7 @@ void main() async {
         Provider.value(value: authService),
         ChangeNotifierProvider(create: (_) => NotesNotifier()),
         ChangeNotifierProvider.value(value: DatabaseService.statusNotifier),
+        ChangeNotifierProvider(create: (_) => AudioProvider()),
       ],
       child: const MyApp(),
     ),
