@@ -104,6 +104,7 @@ class _FullPlayer extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final track = audio.currentTrack!;
+    final playerBody = expanded ? _buildExpanded(context, scheme, track) : _buildCompact(context, scheme, track);
 
     return GestureDetector(
       onPanUpdate: (details) => onDrag(details.delta),
@@ -127,10 +128,9 @@ class _FullPlayer extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-            child: expanded ? _buildExpanded(context, scheme, track) : _buildCompact(context, scheme, track),
-          ),
+          child: isDark
+              ? BackdropFilter(filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20), child: playerBody)
+              : playerBody,
         ),
       ),
     );
