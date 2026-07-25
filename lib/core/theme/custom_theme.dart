@@ -1,4 +1,4 @@
-import 'dart:ui' show Color;
+import 'dart:ui' show Brightness, Color;
 import 'package:flutter/painting.dart' show HSLColor;
 
 import 'app_theme.dart';
