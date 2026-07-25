@@ -172,12 +172,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
               Expanded(child: _buildEditorArea(context)),
             ],
           ),
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: AudioPlayerWidget(),
-          ),
+          const AudioPlayerWidget(),
         ],
       ),
     );
@@ -202,12 +197,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
             isLoading: notifier.isLoading,
             onNoteUpdated: _onNoteUpdated,
           ),
-          const Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: AudioPlayerWidget(),
-          ),
+          const AudioPlayerWidget(),
         ],
       ),
       floatingActionButton: FloatingActionButton(
