@@ -222,6 +222,13 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                   onPressed: () => Scaffold.of(ctx).openDrawer(),
                 ),
               ),
+              Image.asset(
+                'assets/icon/logo.png',
+                width: 24,
+                height: 24,
+                filterQuality: FilterQuality.high,
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   notifier.activeNote?.title ?? 'Nota',
@@ -587,7 +594,30 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
             ),
             child: Column(
               children: [
-                const SizedBox(height: 48),
+                const SizedBox(height: 32),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    children: [
+                      Image.asset(
+                        'assets/icon/logo.png',
+                        width: 28,
+                        height: 28,
+                        filterQuality: FilterQuality.high,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        'Norm',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFFF8FAFC),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Row(
@@ -817,6 +847,13 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       ),
       child: Row(
         children: [
+          Image.asset(
+            'assets/icon/logo.png',
+            width: 28,
+            height: 28,
+            filterQuality: FilterQuality.high,
+          ),
+          const SizedBox(width: 16),
           Expanded(
             child: Container(
               height: 36,

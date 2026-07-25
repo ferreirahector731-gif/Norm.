@@ -280,28 +280,25 @@ class _BentoDashboardScreenState extends State<BentoDashboardScreen> {
       extended: true,
       leading: Padding(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        child: Row(
-          children: [
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6),
-                borderRadius: BorderRadius.circular(10),
+          child: Row(
+            children: [
+              Image.asset(
+                'assets/icon/logo.png',
+                width: 28,
+                height: 28,
+                filterQuality: FilterQuality.high,
               ),
-              child: const Icon(Icons.edit_note_rounded, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 10),
-            const Text(
-              'Norm',
-              style: TextStyle(
-                color: Color(0xFFF8FAFC),
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+              const SizedBox(width: 10),
+              const Text(
+                'Norm',
+                style: TextStyle(
+                  color: Color(0xFFF8FAFC),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
       ),
       destinations: const [
         NavigationRailDestination(
