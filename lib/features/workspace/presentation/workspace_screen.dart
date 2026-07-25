@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../audio/presentation/audio_player_widget.dart';
 import '../../../core/database/database_service.dart';
 import '../../../core/services/sync_manager.dart';
 import '../../../core/services/update_service.dart';
@@ -161,12 +162,22 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
 
     return Scaffold(
       backgroundColor: scheme.surface,
-      body: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: Stack(
         children: [
-          _buildNavSidebar(context),
-          _buildNoteListPanel(context),
-          Expanded(child: _buildEditorArea(context)),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildNavSidebar(context),
+              _buildNoteListPanel(context),
+              Expanded(child: _buildEditorArea(context)),
+            ],
+          ),
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AudioPlayerWidget(),
+          ),
         ],
       ),
     );
@@ -183,11 +194,21 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         child: _buildMobileAppBar(context),
       ),
       drawer: _buildMobileDrawer(context),
-      body: EditorWorkspace(
-        key: ValueKey(notifier.activeNote?.id),
-        note: notifier.activeNote,
-        isLoading: notifier.isLoading,
-        onNoteUpdated: _onNoteUpdated,
+      body: Stack(
+        children: [
+          EditorWorkspace(
+            key: ValueKey(notifier.activeNote?.id),
+            note: notifier.activeNote,
+            isLoading: notifier.isLoading,
+            onNoteUpdated: _onNoteUpdated,
+          ),
+          const Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: AudioPlayerWidget(),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
         mini: true,
