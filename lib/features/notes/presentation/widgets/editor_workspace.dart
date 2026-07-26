@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../../../ai/domain/ai_config.dart';
 import '../../../ai/presentation/widgets/ai_approval_bar.dart';
+import '../../../ai/presentation/widgets/ai_block_modal.dart';
 import '../../../../core/utils/file_utils.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../domain/note_document_codec.dart';
@@ -645,6 +646,29 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
     _editorState.apply(transaction);
   }
 
+  String _getSelectedText(Selection selection) {
+    final nodes = _editorState.getNodesInSelection(selection);
+    final normalized = selection.normalized;
+    if (nodes.isEmpty) return '';
+    final buffer = StringBuffer();
+    for (int i = 0; i < nodes.length; i++) {
+      final node = nodes[i];
+      final delta = node.delta;
+      if (delta == null) continue;
+      final text = delta.toPlainText();
+      if (i == 0 && i == nodes.length - 1) {
+        buffer.write(text.substring(normalized.startIndex, normalized.endIndex));
+      } else if (i == 0) {
+        buffer.write(text.substring(normalized.startIndex));
+      } else if (i == nodes.length - 1) {
+        buffer.write(text.substring(0, normalized.endIndex));
+      } else {
+        buffer.write(text);
+      }
+    }
+    return buffer.toString();
+  }
+
   void _handleFileDrop(String path) {
     final type = FileUtils.detectMediaType(path);
     switch (type) {
@@ -732,6 +756,20 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
   void _requestAIAssist() {
     final selection = _editorState.selection;
     if (selection == null) return;
+
+    if (!selection.isCollapsed) {
+      final selectedText = _getSelectedText(selection);
+      if (selectedText.trim().isNotEmpty) {
+        AIBlockModal.show(context, selectedText: selectedText, onAccept: (result) {
+          final nodes = _editorState.getNodesInSelection(selection);
+          final transaction = _editorState.transaction;
+          transaction.replaceTexts(nodes, selection, [result]);
+          _editorState.apply(transaction);
+          _scheduleSave();
+        });
+        return;
+      }
+    }
 
     final node = _editorState.getNodeAtPath(selection.start.path);
     final contextText =

@@ -10,6 +10,13 @@ enum AIProvider { localEmbedded, ollamaLocal, externalAPI }
 
 enum AIReasoningMode { quick, reasoningX2 }
 
+enum AIModel {
+  claude,
+  gemini,
+  gpt,
+  qwen,
+}
+
 class AIConfig {
   final AIProvider provider;
   final String? externalApiKey;
@@ -93,21 +100,43 @@ class AIEngineService {
       'alteres el flujo del texto con jerga innecesaria a menos '
       'que se te solicite.';
 
-  Stream<String> sendPromptStreaming(String userPrompt) async* {
+  static const _modelEndpoints = {
+    AIModel.claude: 'https://api.anthropic.com/v1/messages',
+    AIModel.gemini:
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+    AIModel.gpt: 'https://api.openai.com/v1/chat/completions',
+    AIModel.qwen:
+        'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions',
+  };
+
+  static const _modelIds = {
+    AIModel.claude: 'claude-sonnet-4-20250514',
+    AIModel.gemini: 'gemini-2.0-flash',
+    AIModel.gpt: 'gpt-4o-mini',
+    AIModel.qwen: 'qwen-plus',
+  };
+
+  Stream<String> sendPromptStreaming(
+    String userPrompt, {
+    AIModel model = AIModel.gpt,
+    String? systemOverride,
+  }) async* {
     final config = AIConfigService.current;
+    final sysMsg = systemOverride ?? systemPrompt;
     switch (config.provider) {
       case AIProvider.localEmbedded:
         yield await _localEmbeddedInference(userPrompt);
       case AIProvider.ollamaLocal:
-        yield* _ollamaStreaming(userPrompt);
+        yield* _ollamaStreaming(userPrompt, systemOverride: sysMsg);
       case AIProvider.externalAPI:
-        yield await _externalApiInference(userPrompt);
+        yield* _externalApiStreaming(userPrompt,
+            model: model, systemOverride: sysMsg);
     }
   }
 
-  Future<String> sendPrompt(String userPrompt) async {
+  Future<String> sendPrompt(String userPrompt, {AIModel model = AIModel.gpt}) async {
     final buffer = StringBuffer();
-    await for (final chunk in sendPromptStreaming(userPrompt)) {
+    await for (final chunk in sendPromptStreaming(userPrompt, model: model)) {
       buffer.write(chunk);
     }
     return buffer.toString();
@@ -122,7 +151,8 @@ class AIEngineService {
         'en Ajustes \u2192 Motor de IA.';
   }
 
-  Stream<String> _ollamaStreaming(String prompt) async* {
+  Stream<String> _ollamaStreaming(String prompt,
+      {String? systemOverride}) async* {
     final config = AIConfigService.current;
     final service = OllamaService(
       baseUrl: config.ollamaBaseUrl ?? 'http://localhost:11434',
@@ -131,7 +161,7 @@ class AIEngineService {
     try {
       await for (final chunk in service.generateStream(
         prompt: prompt,
-        systemPrompt: systemPrompt,
+        systemPrompt: systemOverride ?? systemPrompt,
       )) {
         yield chunk;
       }
@@ -140,34 +170,79 @@ class AIEngineService {
     }
   }
 
-  Future<String> _externalApiInference(String prompt) async {
+  Stream<String> _externalApiStreaming(String prompt,
+      {AIModel model = AIModel.gpt, String? systemOverride}) async* {
     final config = AIConfigService.current;
-    final endpoint =
-        config.externalEndpoint ?? 'https://api.openai.com/v1/chat/completions';
     final apiKey = config.externalApiKey ?? '';
+    if (apiKey.isEmpty) {
+      yield '[API] No hay clave configurada. Ve a Ajustes \u2192 Motor de IA.';
+      return;
+    }
+
+    final endpoint = _modelEndpoints[model]!;
+    final modelId = _modelIds[model]!;
+
     try {
       final client = HttpClient();
       final request = await client.postUrl(Uri.parse(endpoint));
       request.headers.contentType = ContentType.json;
-      if (apiKey.isNotEmpty) {
-        request.headers.set('Authorization', 'Bearer $apiKey');
+      request.headers.set('Authorization', 'Bearer $apiKey');
+
+      if (model == AIModel.claude) {
+        request.headers.set('anthropic-version', '2023-06-01');
+        request.write(jsonEncode({
+          'model': modelId,
+          'max_tokens': 2048,
+          'system': systemOverride ?? systemPrompt,
+          'messages': [
+            {'role': 'user', 'content': prompt},
+          ],
+        }));
+      } else if (model == AIModel.gemini) {
+        request.write(jsonEncode({
+          'contents': [
+            {
+              'role': 'user',
+              'parts': [
+                {'text': '$systemOverride\n\n$prompt'}
+              ],
+            }
+          ],
+        }));
+      } else {
+        request.write(jsonEncode({
+          'model': modelId,
+          'messages': [
+            {'role': 'system', 'content': systemOverride ?? systemPrompt},
+            {'role': 'user', 'content': prompt},
+          ],
+        }));
       }
-      request.write(jsonEncode({
-        'model': config.externalModel ?? 'gpt-4o-mini',
-        'messages': [
-          {'role': 'system', 'content': systemPrompt},
-          {'role': 'user', 'content': prompt},
-        ],
-      }));
+
       final response = await request.close().timeout(
-        const Duration(seconds: 30),
+        const Duration(seconds: 60),
       );
       final body = await response.transform(utf8.decoder).join();
-      final decoded = jsonDecode(body);
-      return decoded['choices']?[0]?['message']?['content'] as String? ??
-          '[API] Respuesta vacía.';
+      final decoded = jsonDecode(body) as Map<String, dynamic>;
+
+      String result;
+      if (model == AIModel.claude) {
+        result = decoded['content']?[0]?['text'] as String? ??
+            decoded['error']?.toString() ??
+            '[Claude] Respuesta vacía.';
+      } else if (model == AIModel.gemini) {
+        result = decoded['candidates']?[0]?['content']?['parts']?[0]?['text']
+                as String? ??
+            decoded['error']?.toString() ??
+            '[Gemini] Respuesta vacía.';
+      } else {
+        result = decoded['choices']?[0]?['message']?['content'] as String? ??
+            decoded['error']?.toString() ??
+            '[API] Respuesta vacía.';
+      }
+      yield result;
     } catch (e) {
-      return '[ExternalAPI] Error: $e';
+      yield '[${model.name}] Error: $e';
     }
   }
 }
