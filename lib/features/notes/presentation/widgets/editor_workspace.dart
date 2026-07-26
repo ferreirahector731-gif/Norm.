@@ -149,14 +149,14 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
     note.updatedAt = DateTime.now();
     note.isDirty = true;
 
-    if (!ChartBlock.isChart(note.contentJson) && !TaskBlock.isTask(note.contentJson) && !LinkBlock.isLink(note.contentJson)) {
+    if (!ChartBlock.isChart(note.contentJson) &&
+        !TaskBlock.isTask(note.contentJson) &&
+        !LinkBlock.isLink(note.contentJson)) {
       note.contentJson = NoteDocumentCodec.encode(_editorState.document);
     }
 
     widget.onNoteUpdated(note);
   }
-
-  // ── Build ──────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -245,7 +245,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSheetTitle(context),
+            _buildModuleTitle(context, 'CHART', const Color(0xFFA78BFA)),
             const SizedBox(height: 12),
             Expanded(
               child: SingleChildScrollView(
@@ -273,7 +273,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSheetTitle(context),
+            _buildModuleTitle(context, 'TASK', const Color(0xFFFBBF24)),
             const SizedBox(height: 12),
             Expanded(
               child: SingleChildScrollView(
@@ -302,7 +302,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildSheetTitle(context),
+            _buildModuleTitle(context, 'LINK', const Color(0xFFF472B6)),
             const SizedBox(height: 12),
             Expanded(
               child: SingleChildScrollView(
@@ -332,7 +332,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
         children: [
           _buildTitle(context),
           const SizedBox(height: 8),
-          _buildFloatingToolbar(context),
+          _buildToolbar(context),
           const SizedBox(height: 12),
           Expanded(
             child: _buildEditor(context),
@@ -374,7 +374,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
     );
   }
 
-  Widget _buildSheetTitle(BuildContext context) {
+  Widget _buildModuleTitle(BuildContext context, String label, Color color) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
 
@@ -392,7 +392,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
               ),
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Título de la hoja...',
+                hintText: 'Título...',
                 hintStyle: TextStyle(
                   color: scheme.onSurfaceVariant.withOpacity(0.25),
                 ),
@@ -403,16 +403,16 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withOpacity(0.12),
+              color: color.withOpacity(0.12),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text(
-              'SHEET',
+              label,
               style: TextStyle(
                 fontSize: 10,
                 fontFamily: 'monospace',
                 fontWeight: FontWeight.bold,
-                color: const Color(0xFF38BDF8),
+                color: color,
               ),
             ),
           ),
@@ -421,7 +421,9 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
     );
   }
 
-  Widget _buildFloatingToolbar(BuildContext context) {
+  Widget _buildToolbar(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 56),
       child: ClipRRect(
@@ -431,9 +433,9 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.04),
+              color: scheme.surfaceContainer.withOpacity(0.9),
               border: Border.all(
-                color: Colors.white.withOpacity(0.08),
+                color: scheme.outlineVariant.withOpacity(0.15),
                 width: 0.5,
               ),
               borderRadius: BorderRadius.circular(14),
@@ -448,24 +450,36 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
                       BuiltInAttributeKey.italic, null),
                   _toolBtn(Icons.format_underline, 'Subrayado',
                       BuiltInAttributeKey.underline, null),
-                  _divider(),
+                  _toolBtn(Icons.format_strikethrough, 'Tachado',
+                      BuiltInAttributeKey.strikethrough, null),
                   _toolBtn(
                       Icons.code, 'Código', BuiltInAttributeKey.code, null),
+                  _divider(scheme),
+                  _toolBtn(Icons.title, 'H1', null, 'h1'),
+                  _toolBtn(Icons.looks_two, 'H2', null, 'h2'),
+                  _toolBtn(Icons.looks_3, 'H3', null, 'h3'),
+                  _divider(scheme),
                   _toolBtn(Icons.format_list_bulleted, 'Lista', null,
                       'bulleted'),
                   _toolBtn(Icons.format_list_numbered, 'Numerada', null,
                       'numbered'),
                   _toolBtn(Icons.check_box_outlined, 'Tareas', null,
                       'checkbox'),
-                  _divider(),
-                  _toolBtn(Icons.title, 'H1', null, 'h1'),
-                  _toolBtn(Icons.looks_two, 'H2', null, 'h2'),
-                  _toolBtn(Icons.looks_3, 'H3', null, 'h3'),
+                  _divider(scheme),
                   _toolBtn(
-                      Icons.image_outlined, 'Imagen', null, 'image'),
+                      Icons.format_align_left, 'Alinear izq.', null, 'align_left'),
+                  _toolBtn(Icons.format_align_center, 'Centrar', null,
+                      'align_center'),
+                  _toolBtn(Icons.format_align_right, 'Alinear der.', null,
+                      'align_right'),
+                  _divider(scheme),
+                  _toolBtn(Icons.format_quote_outlined, 'Cita', null, 'quote'),
                   _toolBtn(
-                      Icons.videocam_outlined, 'Video', null, 'video'),
-                  _divider(),
+                      Icons.integration_instructions, 'Bloque código', null, 'code_block'),
+                  _toolBtn(Icons.horizontal_rule, 'Separador', null, 'divider'),
+                  _divider(scheme),
+                  _toolBtn(Icons.image_outlined, 'Imagen', null, 'image'),
+                  _toolBtn(Icons.videocam_outlined, 'Video', null, 'video'),
                   _toolBtn(
                     _isRecording
                         ? Icons.stop_rounded
@@ -475,7 +489,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
                     'audio',
                     isActiveOverride: _isRecording,
                   ),
-                  _divider(),
+                  _divider(scheme),
                   _toolBtn(Icons.auto_awesome, 'IA', null, 'ai',
                       isActiveOverride: _showAIApproval),
                 ],
@@ -487,12 +501,12 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
     );
   }
 
-  Widget _divider() {
+  Widget _divider(ColorScheme scheme) {
     return Container(
       width: 1,
       height: 24,
       margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-      color: Colors.white.withOpacity(0.08),
+      color: scheme.outlineVariant.withOpacity(0.2),
     );
   }
 
@@ -546,6 +560,18 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
         _wrapInBlock('heading', {'heading': '2'});
       case 'h3':
         _wrapInBlock('heading', {'heading': '3'});
+      case 'align_left':
+        _setAlignment('left');
+      case 'align_center':
+        _setAlignment('center');
+      case 'align_right':
+        _setAlignment('right');
+      case 'quote':
+        _wrapInBlock('quote');
+      case 'code_block':
+        _wrapInBlock('code_block');
+      case 'divider':
+        _insertNodeAfterSelection(dividerNode());
       case 'image':
         _insertNodeAfterSelection(imagePlaceholderNode());
       case 'video':
@@ -565,6 +591,19 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
       return node.copyWith(
         type: type,
         attributes: {...node.attributes, ...?attrs},
+      );
+    });
+  }
+
+  void _setAlignment(String align) {
+    final selection = _editorState.selection;
+    if (selection == null) return;
+    _editorState.formatNode(selection, (node) {
+      return node.copyWith(
+        attributes: {
+          ...node.attributes,
+          BuiltInAttributeKey.align: align,
+        },
       );
     });
   }
@@ -643,8 +682,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
     }
   }
 
-  // ── Slash menu items ───────────────────────────────
-
   SelectionMenuItem _imageSlashItem() => SelectionMenuItem.node(
         getName: () => 'Imagen',
         keywords: ['imagen', 'image', 'foto', 'photo'],
@@ -691,8 +728,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
           _requestAIAssist();
         },
       );
-
-  // ── AI consent flow ────────────────────────────────
 
   void _requestAIAssist() {
     final selection = _editorState.selection;
@@ -759,7 +794,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
       await for (final chunk in engine.sendPromptStreaming(contextText)) {
         if (!mounted || _aiGenerationCancelled) return;
 
-        // Detectar error de conexión en el primer fragmento
         if (!hasFirstChunk && chunk.contains('**[Error de conexión]**')) {
           _loadingTimer?.cancel();
           if (mounted) {
@@ -969,8 +1003,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
                     iconData: Icons.videocam_outlined,
                     label: 'Video',
                   ),
-                  AudioBlockKeys.type:
-                      AudioBlockComponentBuilder(),
+                  AudioBlockKeys.type: AudioBlockComponentBuilder(),
                 },
               ),
             ),
