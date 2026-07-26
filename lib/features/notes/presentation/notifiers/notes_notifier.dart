@@ -8,7 +8,6 @@ import '../../domain/markdown_converter.dart';
 import '../../domain/note_model.dart';
 import '../../../../core/database/database_service.dart';
 import '../../../../core/services/sync_manager.dart';
-import '../../../sheets/domain/sheet_block.dart';
 import '../../../charts/domain/chart_block.dart';
 import '../../../tasks/domain/task_block.dart';
 import '../../../links/domain/link_block.dart';
@@ -63,33 +62,6 @@ class NotesNotifier extends ChangeNotifier {
     final note = NoteModel.create(
       title: 'Nota sin título',
       contentJson: '[]',
-    );
-    await DatabaseService.saveNote(note);
-    SyncManager.scheduleSync();
-
-    _notes = await DatabaseService.getAllNotes();
-    _activeNote = note;
-    notifyListeners();
-  }
-
-  Future<void> createWhiteboard() async {
-    final note = NoteModel.create(
-      title: 'Pizarrón sin título',
-      contentJson: '[]',
-    );
-    await DatabaseService.saveNote(note);
-    SyncManager.scheduleSync();
-
-    _notes = await DatabaseService.getAllNotes();
-    _activeNote = note;
-    notifyListeners();
-  }
-
-  Future<void> createSheet() async {
-    final sheet = SheetBlock();
-    final note = NoteModel.create(
-      title: 'Hoja sin título',
-      contentJson: sheet.encode(),
     );
     await DatabaseService.saveNote(note);
     SyncManager.scheduleSync();

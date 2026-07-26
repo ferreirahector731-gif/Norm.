@@ -17,16 +17,12 @@ import 'package:nota_ia_app/features/notes/presentation/notifiers/notes_notifier
 import '../editor_blocks/audio_block.dart';
 import '../editor_blocks/custom_block_keys.dart';
 import '../editor_blocks/placeholder_block.dart';
-import '../editor_blocks/whiteboard_block.dart';
-import '../../../sheets/domain/sheet_block.dart';
-import '../../../sheets/presentation/sheet_widget.dart';
 import '../../../charts/domain/chart_block.dart';
 import '../../../charts/presentation/chart_widget.dart';
 import '../../../tasks/domain/task_block.dart';
 import '../../../tasks/presentation/task_widget.dart';
 import '../../../links/domain/link_block.dart';
 import '../../../links/presentation/link_widget.dart';
-import 'whiteboard_canvas.dart';
 
 class EditorWorkspace extends StatefulWidget {
   final NoteModel? note;
@@ -94,7 +90,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
   void _setupEditor() {
     _editorState.selectionMenuItems = [
       ...standardSelectionMenuItems,
-      _whiteboardSlashItem(),
       _imageSlashItem(),
       _videoSlashItem(),
       _audioSlashItem(),
@@ -154,7 +149,7 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
     note.updatedAt = DateTime.now();
     note.isDirty = true;
 
-    if (!SheetBlock.isSheet(note.contentJson) && !ChartBlock.isChart(note.contentJson) && !TaskBlock.isTask(note.contentJson) && !LinkBlock.isLink(note.contentJson)) {
+    if (!ChartBlock.isChart(note.contentJson) && !TaskBlock.isTask(note.contentJson) && !LinkBlock.isLink(note.contentJson)) {
       note.contentJson = NoteDocumentCodec.encode(_editorState.document);
     }
 
@@ -175,10 +170,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
       );
     }
 
-    final isWhiteboard = widget.note != null &&
-        widget.note!.contentJson.trim().startsWith('[');
-    final isSheet = widget.note != null &&
-        SheetBlock.isSheet(widget.note!.contentJson);
     final isChart = widget.note != null &&
         ChartBlock.isChart(widget.note!.contentJson);
     final isTask = widget.note != null &&
@@ -246,38 +237,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
       );
     }
 
-    if (isWhiteboard) {
-      return WhiteboardCanvas(note: widget.note!);
-    }
-
-    if (isSheet) {
-      final sheet = SheetBlock.decode(widget.note!.contentJson);
-      return Container(
-        color: scheme.surface,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSheetTitle(context),
-            const SizedBox(height: 12),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(40, 0, 40, 24),
-                child: SheetWidget(
-                  sheet: sheet,
-                  onChanged: (updated) {
-                    widget.note!.contentJson = updated.encode();
-                    widget.note!.updatedAt = DateTime.now();
-                    widget.note!.isDirty = true;
-                    widget.onNoteUpdated(widget.note!);
-                  },
-                ),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-
     if (isChart) {
       final chart = ChartBlock.decode(widget.note!.contentJson);
       final allNotes = context.read<NotesNotifier>().notes;
@@ -298,14 +257,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
                     widget.note!.updatedAt = DateTime.now();
                     widget.note!.isDirty = true;
                     widget.onNoteUpdated(widget.note!);
-                  },
-                  allNotes: allNotes,
-                  onLinkSheet: (msg) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(msg), behavior: SnackBarBehavior.floating),
-                      );
-                    }
                   },
                 ),
               ),
@@ -510,9 +461,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
                   _toolBtn(Icons.title, 'H1', null, 'h1'),
                   _toolBtn(Icons.looks_two, 'H2', null, 'h2'),
                   _toolBtn(Icons.looks_3, 'H3', null, 'h3'),
-                  _divider(),
-                  _toolBtn(
-                      Icons.draw_outlined, 'Pizarrón', null, 'whiteboard'),
                   _toolBtn(
                       Icons.image_outlined, 'Imagen', null, 'image'),
                   _toolBtn(
@@ -598,8 +546,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
         _wrapInBlock('heading', {'heading': '2'});
       case 'h3':
         _wrapInBlock('heading', {'heading': '3'});
-      case 'whiteboard':
-        _insertNodeAfterSelection(whiteboardNode());
       case 'image':
         _insertNodeAfterSelection(imagePlaceholderNode());
       case 'video':
@@ -698,17 +644,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
   }
 
   // ── Slash menu items ───────────────────────────────
-
-  SelectionMenuItem _whiteboardSlashItem() => SelectionMenuItem.node(
-        getName: () => 'Pizarrón',
-        keywords: ['pizarron', 'dibujo', 'whiteboard', 'draw'],
-        iconBuilder: (_, onSelected, style) => Icon(
-          Icons.draw_outlined,
-          size: 16,
-          color: onSelected ? const Color(0xff7B2CBF) : null,
-        ),
-        nodeBuilder: (state, context) => whiteboardNode(),
-      );
 
   SelectionMenuItem _imageSlashItem() => SelectionMenuItem.node(
         getName: () => 'Imagen',
@@ -1022,8 +957,6 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
                 editorState: _editorState,
                 blockComponentBuilders: {
                   ...standardBlockComponentBuilderMap,
-                  WhiteboardBlockKeys.type:
-                      WhiteboardBlockComponentBuilder(),
                   ImagePlaceholderKeys.type:
                       PlaceholderBlockComponentBuilder(
                     blockType: ImagePlaceholderKeys.type,

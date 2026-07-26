@@ -14,7 +14,7 @@ import '../../ai/presentation/ai_bubble_widget.dart';
 import '../../ai/services/ollama_ai_service.dart';
 import '../../settings/presentation/settings_screen.dart';
 
-enum _NavTab { home, notes, whiteboard, settings }
+enum _NavTab { home, notes, settings }
 
 class BentoDashboardScreen extends StatefulWidget {
   const BentoDashboardScreen({super.key});
@@ -61,20 +61,6 @@ class _BentoDashboardScreenState extends State<BentoDashboardScreen> {
           isLoading: false,
           onNoteUpdated: (_) {},
         ),
-      ),
-    );
-  }
-
-  Future<void> _openWhiteboard() async {
-    final note = NoteModel.create(
-      title: 'Lienzo ${DateTime.now().toString().substring(0, 16)}',
-      contentJson: '{"blocks":[]}',
-    );
-    await DatabaseService.saveNote(note);
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => InfiniteCanvasScreen(note: note),
       ),
     );
   }
@@ -162,9 +148,6 @@ class _BentoDashboardScreenState extends State<BentoDashboardScreen> {
       _selectedTab = _NavTab.values[index];
     });
     switch (_selectedTab) {
-      case _NavTab.whiteboard:
-        _openWhiteboard();
-        break;
       case _NavTab.notes:
         break;
       case _NavTab.settings:
@@ -261,7 +244,6 @@ class _BentoDashboardScreenState extends State<BentoDashboardScreen> {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.home_outlined), label: 'Inicio'),
           NavigationDestination(icon: Icon(Icons.description_outlined), label: 'Notas'),
-          NavigationDestination(icon: Icon(Icons.draw_outlined), label: 'Pizarrón'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), label: 'Ajustes'),
         ],
       ),
@@ -312,11 +294,6 @@ class _BentoDashboardScreenState extends State<BentoDashboardScreen> {
           label: Text('Notas'),
         ),
         NavigationRailDestination(
-          icon: Icon(Icons.draw_outlined),
-          selectedIcon: Icon(Icons.draw),
-          label: Text('Pizarrón'),
-        ),
-        NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings),
           label: Text('Ajustes'),
@@ -359,10 +336,6 @@ class _BentoDashboardScreenState extends State<BentoDashboardScreen> {
     // Recent notes
     tiles.add(StaggeredTile.extent(cols > 2 ? 2 : cols, 320));
     cards.add(_buildRecentNotesCard());
-
-    // Whiteboard shortcut
-    tiles.add(StaggeredTile.extent(1, 170));
-    cards.add(_buildWhiteboardCard());
 
     // AI Status
     tiles.add(StaggeredTile.extent(1, 170));
@@ -454,35 +427,6 @@ class _BentoDashboardScreenState extends State<BentoDashboardScreen> {
                       );
                     },
                   ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWhiteboardCard() {
-    return GlassBentoCard(
-      onTap: _openWhiteboard,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF38BDF8).withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: const Icon(Icons.draw_outlined, color: Color(0xFF38BDF8), size: 18),
-          ),
-          const Spacer(),
-          const Text(
-            'Pizarrón',
-            style: TextStyle(color: Color(0xFFF8FAFC), fontSize: 16, fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Infinito',
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
           ),
         ],
       ),

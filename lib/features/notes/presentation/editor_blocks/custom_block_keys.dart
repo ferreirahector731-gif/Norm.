@@ -1,11 +1,5 @@
 import 'package:appflowy_editor/appflowy_editor.dart';
 
-class WhiteboardBlockKeys {
-  const WhiteboardBlockKeys._();
-  static const String type = 'whiteboard';
-  static const String strokes = 'strokes';
-}
-
 class ImagePlaceholderKeys {
   const ImagePlaceholderKeys._();
   static const String type = 'image_placeholder';
@@ -33,10 +27,6 @@ class AudioBlockKeys {
   static const String bytePath = 'byte_path';
   static const String duration = 'duration';
 }
-
-Node whiteboardNode() => Node(type: WhiteboardBlockKeys.type, attributes: {
-  WhiteboardBlockKeys.strokes: '[]',
-});
 
 Node imagePlaceholderNode({String path = ''}) =>
     Node(type: ImagePlaceholderKeys.type, attributes: {

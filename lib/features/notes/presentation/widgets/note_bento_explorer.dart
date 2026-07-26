@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../domain/note_model.dart';
 import '../notifiers/notes_notifier.dart';
-import '../../../sheets/domain/sheet_block.dart';
 import '../../../charts/domain/chart_block.dart';
 import '../../../tasks/domain/task_block.dart';
 import '../../../links/domain/link_block.dart';
@@ -202,20 +201,10 @@ class _NoteBentoExplorerState extends State<NoteBentoExplorer> {
         Navigator.of(context).pop();
         notifier.createTextNote();
       }),
-      _BentoModuleOption(Icons.table_chart_outlined, const Color(0xFF38BDF8), 'SHEET',
-          'Hoja de Datos', 'Datos estructurados', () {
-        Navigator.of(context).pop();
-        notifier.createSheet();
-      }),
       _BentoModuleOption(Icons.bar_chart_outlined, const Color(0xFFA78BFA), 'CHART',
           'Telemetría', 'Gráficos 60 FPS', () {
         Navigator.of(context).pop();
         notifier.createChart();
-      }),
-      _BentoModuleOption(Icons.draw_outlined, const Color(0xFFFB7185), 'CANVAS',
-          'Pizarrón Infinito', 'Lienzo espacial', () {
-        Navigator.of(context).pop();
-        notifier.createWhiteboard();
       }),
       _BentoModuleOption(Icons.link_outlined, const Color(0xFFF472B6), 'LINK',
           'Enlace / Backlink', 'Conexiones semánticas', () {
@@ -540,8 +529,6 @@ class _BentoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final isWhiteboard = note.contentJson.trim().isNotEmpty && note.contentJson.trim().startsWith('[');
-    final isSheet = SheetBlock.isSheet(note.contentJson);
     final isChart = ChartBlock.isChart(note.contentJson);
     final isTask = TaskBlock.isTask(note.contentJson);
     final isLink = LinkBlock.isLink(note.contentJson);
@@ -570,22 +557,18 @@ class _BentoCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: (isLink ? const Color(0xFFF472B6) : isTask ? const Color(0xFFFBBF24) : isChart ? const Color(0xFFA78BFA) : isSheet ? const Color(0xFF38BDF8) : isWhiteboard ? const Color(0xff9d4edd) : scheme.primary).withOpacity(0.15),
+                    color: (isLink ? const Color(0xFFF472B6) : isTask ? const Color(0xFFFBBF24) : isChart ? const Color(0xFFA78BFA) : scheme.primary).withOpacity(0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(
                     isLink ? Icons.link_outlined :
                     isTask ? Icons.checklist_rtl :
                     isChart ? Icons.bar_chart_outlined :
-                    isSheet ? Icons.table_chart_outlined :
-                    isWhiteboard ? Icons.draw_outlined :
                     Icons.description_outlined,
                     size: 14,
-                    color: isLink ? const Color(0xFFF472B6) :
+                    color:                     isLink ? const Color(0xFFF472B6) :
                     isTask ? const Color(0xFFFBBF24) :
-                    isChart ? const Color(0xFFA78BFA) :
-                    isSheet ? const Color(0xFF38BDF8) :
-                    isWhiteboard ? const Color(0xff9d4edd) : scheme.primary,
+                    isChart ? const Color(0xFFA78BFA) : scheme.primary,
                   ),
                 ),
                 const SizedBox(width: 8),

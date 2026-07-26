@@ -18,9 +18,7 @@ import '../../home/widgets/theme_selector.dart';
 import '../../notes/domain/note_model.dart';
 import '../../notes/presentation/widgets/editor_workspace.dart';
 import '../../notes/presentation/widgets/note_bento_explorer.dart';
-import '../../notes/presentation/widgets/whiteboard_canvas.dart';
 import '../../notes/presentation/notifiers/notes_notifier.dart';
-import '../../sheets/domain/sheet_block.dart';
 import '../../charts/domain/chart_block.dart';
 import '../../tasks/domain/task_block.dart';
 import '../../links/domain/link_block.dart';
@@ -80,32 +78,12 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
 
   Future<void> _selectNote(NoteModel note, {required bool persistCurrent}) async {
     final notifier = context.read<NotesNotifier>();
-    if (_isWhiteboard(note)) {
-      if (persistCurrent && notifier.activeNote != null) {
-        await notifier.updateNote(notifier.activeNote!);
-      }
-      if (!mounted) return;
-      await Navigator.of(context).push(
-        MaterialPageRoute(builder: (_) => WhiteboardCanvas(note: note)),
-      );
-      await notifier.loadNotes();
-      return;
-    }
 
     if (persistCurrent && notifier.activeNote != null) {
       await notifier.updateNote(notifier.activeNote!);
     }
 
     notifier.selectNote(note);
-  }
-
-  bool _isWhiteboard(NoteModel note) {
-    final raw = note.contentJson.trim();
-    return raw.isNotEmpty && raw.startsWith('[');
-  }
-
-  bool _isSheet(NoteModel note) {
-    return SheetBlock.isSheet(note.contentJson);
   }
 
   bool _isChart(NoteModel note) {
@@ -384,20 +362,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         Navigator.of(context).pop();
         notifier.createTextNote();
       }),
-      _ModuleOption(Icons.table_chart_outlined, const Color(0xFF38BDF8), 'SHEET',
-          'Hoja de Datos', 'Datos estructurados con tabla', () {
-        Navigator.of(context).pop();
-        notifier.createSheet();
-      }),
       _ModuleOption(Icons.bar_chart_outlined, const Color(0xFFA78BFA), 'CHART',
           'Telemetría', 'Gráficos y rendimiento a 60 FPS', () {
         Navigator.of(context).pop();
         notifier.createChart();
-      }),
-      _ModuleOption(Icons.draw_outlined, const Color(0xFFFB7185), 'CANVAS',
-          'Pizarrón Infinito', 'Lienzo espacial con zoom y nodos', () {
-        Navigator.of(context).pop();
-        notifier.createWhiteboard();
       }),
       _ModuleOption(Icons.link_outlined, const Color(0xFFF472B6), 'LINK',
           'Enlace / Backlink', 'Conexiones semánticas', () {
@@ -554,8 +522,6 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                     _isLink(note) ? Icons.link_outlined :
                     _isTask(note) ? Icons.checklist_rtl :
                     _isChart(note) ? Icons.bar_chart_outlined :
-                    _isSheet(note) ? Icons.table_chart_outlined :
-                    _isWhiteboard(note) ? Icons.draw_outlined :
                     Icons.description_outlined,
                     size: 18,
                     color: isSelected ? scheme.primary : scheme.onSurfaceVariant.withOpacity(0.6),

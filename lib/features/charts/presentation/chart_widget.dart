@@ -3,21 +3,15 @@ import 'package:flutter/material.dart';
 
 import '../domain/chart_block.dart';
 import '../../../../core/widgets/concentric_card.dart';
-import '../../notes/domain/note_model.dart';
-import '../../sheets/domain/sheet_block.dart';
 
 class ChartWidget extends StatefulWidget {
   final ChartBlock chart;
   final ValueChanged<ChartBlock> onChanged;
-  final List<NoteModel> allNotes;
-  final void Function(String message)? onLinkSheet;
 
   const ChartWidget({
     super.key,
     required this.chart,
     required this.onChanged,
-    this.allNotes = const [],
-    this.onLinkSheet,
   });
 
   @override
@@ -134,90 +128,6 @@ class _ChartWidgetState extends State<ChartWidget> {
     _notifyChanged();
   }
 
-  void _linkToSheet() {
-    final sheets = widget.allNotes
-        .where((n) => SheetBlock.isSheet(n.contentJson))
-        .toList();
-
-    if (sheets.isEmpty) {
-      widget.onLinkSheet?.call('No hay hojas de datos. Crea una desde SHEET.');
-      return;
-    }
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Vincular a Hoja de Datos'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: sheets.length,
-            itemBuilder: (_, i) {
-              final sheet = sheets[i];
-              final data = SheetBlock.decode(sheet.contentJson);
-              return ListTile(
-                leading: const Icon(Icons.table_chart_outlined, color: Color(0xFF38BDF8)),
-                title: Text(sheet.title, style: const TextStyle(fontSize: 14)),
-                subtitle: Text('${data.colCount} col × ${data.rowCount} fil',
-                    style: const TextStyle(fontSize: 11)),
-                onTap: () {
-                  _chart.linkedSheetId = sheet.id;
-                  Navigator.of(ctx).pop();
-                  _showColumnPicker(data);
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
-        ],
-      ),
-    );
-  }
-
-  void _showColumnPicker(SheetBlock sheet) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Seleccionar Columna'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.builder(
-            shrinkWrap: true,
-            itemCount: sheet.colCount,
-            itemBuilder: (_, i) {
-              final colName = sheet.columns[i];
-              final isNumeric = sheet.rows.any((r) => double.tryParse(r[i]) != null);
-              return ListTile(
-                leading: Icon(
-                  isNumeric ? Icons.bar_chart : Icons.text_fields,
-                  color: const Color(0xFFA78BFA),
-                ),
-                title: Text(colName, style: const TextStyle(fontSize: 14)),
-                subtitle: Text(isNumeric ? 'Datos numéricos' : 'Texto',
-                    style: const TextStyle(fontSize: 11)),
-                onTap: () {
-                  _chart.linkedColumn = i;
-                  _chart.loadFromSheet(sheet);
-                  _disposeControllers();
-                  _rebuildControllers();
-                  Navigator.of(ctx).pop();
-                  setState(() {});
-                  _notifyChanged();
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('Cancelar')),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -263,18 +173,7 @@ class _ChartWidgetState extends State<ChartWidget> {
               onChanged: (_) => _notifyChanged(),
             ),
           ),
-          if (_chart.linkedSheetId != null)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withOpacity(0.12),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Text(
-                'VINCULADO',
-                style: TextStyle(fontSize: 8, fontFamily: 'monospace', fontWeight: FontWeight.bold, color: const Color(0xFF38BDF8)),
-              ),
-            ),
+
         ],
       ),
     );
@@ -636,51 +535,7 @@ class _ChartWidgetState extends State<ChartWidget> {
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: _linkToSheet,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.link, size: 14, color: const Color(0xFF38BDF8)),
-                    const SizedBox(width: 4),
-                    Text('Vincular SHEET', style: TextStyle(fontSize: 11, color: const Color(0xFF38BDF8))),
-                  ],
-                ),
-              ),
-            ),
-          ),
           const Spacer(),
-          if (_chart.linkedSheetId != null)
-            Material(
-              color: Colors.transparent,
-              child: InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap: () {
-                  setState(() {
-                    _chart.linkedSheetId = null;
-                    _chart.linkedColumn = 0;
-                  });
-                  _notifyChanged();
-                },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.link_off, size: 14, color: scheme.onSurfaceVariant.withOpacity(0.4)),
-                      const SizedBox(width: 4),
-                      Text('Desvincular', style: TextStyle(fontSize: 11, color: scheme.onSurfaceVariant.withOpacity(0.4))),
-                    ],
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );

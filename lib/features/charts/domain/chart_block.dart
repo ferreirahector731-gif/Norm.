@@ -5,8 +5,6 @@
 
 import 'dart:convert';
 
-import '../../sheets/domain/sheet_block.dart';
-
 enum ChartType { bar, line, pie }
 
 class ChartSeries {
@@ -86,22 +84,6 @@ class ChartBlock {
     labels.removeAt(index);
     for (final s in series) {
       s.data.removeAt(index);
-    }
-  }
-
-  void loadFromSheet(SheetBlock sheet) {
-    if (linkedColumn >= sheet.colCount) return;
-    labels.clear();
-    for (int r = 0; r < sheet.rowCount; r++) {
-      labels.add(sheet.rows[r].isNotEmpty ? sheet.rows[r][0] : 'Fila ${r + 1}');
-    }
-    if (linkedColumn > 0 && linkedColumn < sheet.colCount) {
-      series.clear();
-      final colName = sheet.columns[linkedColumn];
-      series.add(ChartSeries(
-        name: colName,
-        data: sheet.rows.map((r) => double.tryParse(r[linkedColumn]) ?? 0.0).toList(),
-      ));
     }
   }
 
