@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
 
 jobs:
   build-windows:
@@ -85,8 +84,9 @@ jobs:
         with:
           name: windows-build
           path: |
-            Norm_${{ github.ref_name }}.msix
-            installer\Output\Norm_${{ github.ref_name }}_Setup.exe
+            norm_src/Norm_${{ github.ref_name }}.msix
+            norm_src/installer/Output/Norm_${{ github.ref_name }}_Setup.exe
+            norm_src/build/windows/x64/runner/Release/*.exe
 
   build-android:
     continue-on-error: true
@@ -154,7 +154,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: android-apks
-          path: artifacts/
+          path: norm_src/artifacts/
 
   build-linux:
     name: Linux
@@ -250,7 +250,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: Norm_Linux_${{ github.ref_name }}.deb
+          path: norm_src/Norm_Linux_${{ github.ref_name }}.deb
 
   build-macos:
     continue-on-error: true
@@ -311,7 +311,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: macos-build
-          path: Norm_macOS_${{ github.ref_name }}.dmg
+          path: norm_src/Norm_macOS_${{ github.ref_name }}.dmg
 
   release:
     name: Create Release
@@ -332,6 +332,7 @@ jobs:
             Compilaciones automáticas multiplataforma.
           files: |
             artifacts/**/*.msix
+            artifacts/**/*.exe
             artifacts/**/*.deb
             artifacts/**/*.dmg
             artifacts/**/*.apk
