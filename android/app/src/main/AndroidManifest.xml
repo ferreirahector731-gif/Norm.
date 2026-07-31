@@ -61,12 +61,15 @@
                 <action android:name="android.intent.action.MEDIA_BUTTON"/>
             </intent-filter>
         </receiver>
-        <!-- ===== Servicio y receptores de alarmas (alarm package) ===== -->
-        <service android:name="dev.gdelataillade.alarm.services.AlarmService"
+        <!-- ===== Servicio y receptores de alarmas (alarm 5.6.0) ===== -->
+        <!-- El paquete los auto-fusiona; se declaran por claridad con los
+             nombres reales de 5.6.0 (dev.gdelataillade.* era API v7 y no
+             existe en la versión estable). -->
+        <service android:name="com.gdelataillade.alarm.alarm.AlarmService"
             android:exported="false" />
-        <receiver android:name="dev.gdelataillade.alarm.receivers.AlarmReceiver"
+        <receiver android:name="com.gdelataillade.alarm.alarm.AlarmReceiver"
             android:exported="false" />
-        <receiver android:name="dev.gdelataillade.alarm.receivers.BootReceiver"
+        <receiver android:name="com.gdelataillade.alarm.alarm.BootReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>

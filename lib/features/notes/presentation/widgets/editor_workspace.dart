@@ -603,7 +603,9 @@ class _EditorWorkspaceState extends State<EditorWorkspace> {
       return node.copyWith(
         attributes: {
           ...node.attributes,
-          BuiltInAttributeKey.align: align,
+          // v4: BuiltInAttributeKey.align was removed; the alignment key is
+          // blockComponentAlign ('align'), consumed by BlockComponentAlignMixin.
+          blockComponentAlign: align,
         },
       );
     });
