@@ -13,7 +13,7 @@
 
 ## Overview
 
-**Norm.** is a multimodal, local-first productivity suite that unifies your knowledge on a single infinite canvas at 120 FPS. Built on the principle that **no one decides for you — not even the app**, it eliminates the need for multiple subscriptions by integrating 7 native modules into a single fluid workspace:
+**Norm.** is a multimodal, local-first productivity suite that unifies your knowledge on a single infinite canvas at 120 FPS. Built on the principle that **no one decides for you — not even the app**, it eliminates the need for multiple subscriptions by integrating 10 native modules into a single fluid workspace:
 
 | Module | Purpose |
 |---|---|
@@ -24,6 +24,37 @@
 | **Chart** | Dynamic, interactive graphs live-synced to your data |
 | **Task** | Full project management with NLP-powered task entry |
 | **Link** | Knowledge graphs with automatic bidirectional linking and backlink discovery |
+| **Music** | Local and online audio playback in background with lock-screen controls |
+| **Alarm** | Smart alarms with full-screen lock-screen alerts and calendar integration |
+| **Calendar** | Visual scheduling that projects alarms and tasks onto a timeline |
+
+---
+
+## What's New in v1.9.0
+
+### 🔔 Full-Screen Lock-Screen Alarms
+- Alarms wake the screen (`turnScreenOn`) and show over the lock screen (`showWhenLocked`) using the full-screen intent API.
+- Exact alarm scheduling (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`) for millisecond-precision reminders.
+- `POST_NOTIFICATIONS` enables rich notifications on Android 13+.
+
+### 💬 Bubbles (Floating Windows)
+- The `SYSTEM_ALERT_WINDOW` permission powers floating note bubbles that stay on top of any app.
+
+### 🎵 Background Music Playback
+- `audio_service` foreground service (`FOREGROUND_SERVICE_MEDIA_PLAYBACK`) keeps playback alive when the app is closed, with `MediaButtonReceiver` for wired headset/bluetooth controls.
+- `READ_MEDIA_AUDIO` / `READ_EXTERNAL_STORAGE` grants access to on-device tracks.
+
+### 📱 Android Native Wiring (v1.9.0)
+| Component | Entry |
+|---|---|
+| Audio service | `com.ryanheise.audioservice.AudioService` |
+| Media button receiver | `com.ryanheise.audioservice.MediaButtonReceiver` |
+| Alarm service | `dev.gdelataillade.alarm.services.AlarmService` |
+| Alarm receiver | `dev.gdelataillade.alarm.receivers.AlarmReceiver` |
+| Boot persistence | `dev.gdelataillade.alarm.receivers.BootReceiver` (`BOOT_COMPLETED`, `LOCKED_BOOT_COMPLETED`, `QUICKBOOT_POWERON`) |
+| Main activity | `showWhenLocked="true"`, `turnScreenOn="true"` |
+
+Alarms survive device reboots, playback continues in the background, and bubbles are always available — all wired in [`android/app/src/main/AndroidManifest.xml`](./android/app/src/main/AndroidManifest.xml).
 
 ---
 
